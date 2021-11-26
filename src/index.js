@@ -39,10 +39,14 @@ app.post("/users", (request, response) => {
     userName,
     todos: [],
   });
+
+  return response.status(200).send(users);
 });
 
 app.get("/todos", checksExistsUserAccount, (request, response) => {
-  // Complete aqui
+  const { username } = request.headers;
+
+  return response.status(200).json(username.todos);
 });
 
 app.post("/todos", checksExistsUserAccount, (request, response) => {
@@ -60,5 +64,7 @@ app.patch("/todos/:id/done", checksExistsUserAccount, (request, response) => {
 app.delete("/todos/:id", checksExistsUserAccount, (request, response) => {
   // Complete aqui
 });
+
+// app.listen(3333);
 
 module.exports = app;
