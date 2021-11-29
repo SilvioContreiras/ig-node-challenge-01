@@ -19,14 +19,16 @@ function checksExistsUserAccount(request, response, next) {
     return response.status(404).send({ message: "User not found" });
   }
 
+  request.todos = user.todos;
+
   return next();
 }
 
 app.post("/users", (request, response) => {
-  const { name, userName } = request.body;
+  const { name, username } = request.body;
 
   const customerAlreadyExists = users.some(
-    (user) => user.username === userName
+    (user) => user.username === username
   );
 
   if (customerAlreadyExists) {
@@ -36,7 +38,7 @@ app.post("/users", (request, response) => {
   users.push({
     id: uuidv4(),
     name,
-    userName,
+    username,
     todos: [],
   });
 
@@ -44,17 +46,41 @@ app.post("/users", (request, response) => {
 });
 
 app.get("/todos", checksExistsUserAccount, (request, response) => {
-  const { username } = request.headers;
+  const { todos } = request;
 
-  return response.status(200).json(username.todos);
+  return response.status(200).json(todos);
 });
 
 app.post("/todos", checksExistsUserAccount, (request, response) => {
-  // Complete aqui
+  const { title, deadline } = request.body;
+
+  const todo = {
+    id: uuidv4(),
+    title,
+    done: false,
+    deadline: new Date(deadline),
+    created_at: new Date(),
+  };
+
+  request.todos.push(todo);
+
+  return response.status(201).send();
 });
 
 app.put("/todos/:id", checksExistsUserAccount, (request, response) => {
-  // Complete aqui
+  const { title, deadline } = request.body;
+  // const { username } = request.headers;
+  const { id } = request.params;
+  const { todos } = request;
+
+  const todo = todos.find((todo) => todo.id === id);
+
+  if (todo) {
+    todo.title = title;
+    todo.deadline = new Date(deadline);
+
+    return response.status(200).json(todo);
+  }
 });
 
 app.patch("/todos/:id/done", checksExistsUserAccount, (request, response) => {
@@ -64,7 +90,5 @@ app.patch("/todos/:id/done", checksExistsUserAccount, (request, response) => {
 app.delete("/todos/:id", checksExistsUserAccount, (request, response) => {
   // Complete aqui
 });
-
-// app.listen(3333);
 
 module.exports = app;
